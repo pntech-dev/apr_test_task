@@ -1,34 +1,156 @@
 {
-  "openapi": "3.1.0",
-  "info": {
-    "title": "Document Search API",
-    "version": "0.1.0",
-    "description": "API for document storage in PostgreSQL with full-text search via Elasticsearch"
-  },
-  "paths": {
-    "/api/health": {
-      "get": {
-        "summary": "Health Check",
-        "operationId": "health_check",
-        "responses": {
-          "200": {
-            "description": "Service is healthy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "ok"
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Document Search API",
+        "version": "0.1.0",
+        "description": "API for document storage in PostgreSQL with full-text search via Elasticsearch"
+    },
+    "paths": {
+        "/api/health": {
+            "get": {
+                "summary": "Health Check",
+                "operationId": "health_check",
+                "responses": {
+                    "200": {
+                        "description": "Service is healthy",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "ok"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-          }
+        },
+        "/api/search": {
+            "get": {
+                "summary": "Search Documents",
+                "description": "Full-text search across documents via Elasticsearch. Returns up to 20 results ordered by creation date.",
+                "operationId": "search_documents",
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "required": true,
+                        "description": "Text search query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of matching documents",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Document"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - missing query parameter"
+                    }
+                }
+            }
+        },
+        "/api/documents/{doc_id}": {
+            "delete": {
+                "summary": "Delete Document",
+                "description": "Removes a document from both PostgreSQL and Elasticsearch index.",
+                "operationId": "delete_document",
+                "parameters": [
+                    {
+                        "name": "doc_id",
+                        "in": "path",
+                        "required": true,
+                        "description": "Document ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Document 1 deleted"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Document not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Document not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-      }
+    },
+    "components": {
+        "schemas": {
+            "Document": {
+                "type": "object",
+                "required": ["id", "text", "rubrics", "created_date"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Unique document identifier",
+                        "example": 1
+                    },
+                    "text": {
+                        "type": "string",
+                        "description": "Document text content",
+                        "example": "Текст документа"
+                    },
+                    "rubrics": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of rubric identifiers",
+                        "example": ["VK-1603736028819866", "VK-11879320040"]
+                    },
+                    "created_date": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Document creation timestamp",
+                        "example": "2019-07-25T12:42:13"
+                    }
+                }
+            }
+        }
     }
-  }
 }
