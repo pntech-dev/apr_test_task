@@ -45,3 +45,7 @@ async def search_documents(es: AsyncElasticsearch, query: str, size: int = 20) -
         },
     )
     return [int(hit["fields"]["id"][0]) for hit in resp["hits"]["hits"]]
+
+
+async def delete_document(es: AsyncElasticsearch, doc_id: int) -> None:
+    await es.delete(index=INDEX_NAME, id=str(doc_id), ignore=[404])
